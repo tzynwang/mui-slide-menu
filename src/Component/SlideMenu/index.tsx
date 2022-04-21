@@ -35,7 +35,7 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
   const handleSlideToParent = () => {
     setParent(null)
   }
-  const handleParentClick = (
+  const handlePreventLeave = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.stopPropagation()
@@ -90,7 +90,7 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
             {parentArr.map((p) => (
               <MenuItem key={p.id} onClick={handleSliceToChild(p.id)}>
                 <Checkbox
-                  onClick={handleParentClick}
+                  onClick={handlePreventLeave}
                   onChange={handleParentChange(p)}
                   indeterminate={
                     !!checkedChild.filter((c) => c.parent === p.id).length &&
@@ -110,12 +110,11 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
         </Slide>
         <Slide direction="right" in={!!parent} container={containerRef.current}>
           <Paper classes={{ root: 'PaperChild' }}>
-            <MenuItem onClick={handleSlideToParent}>
-              <ArrowBackIosNewIcon classes={{ root: 'SvgIconChild' }} />
-            </MenuItem>
             {dynamicChildList.map((c) => (
-              <MenuItem key={c.id}>
+              <MenuItem key={c.id} onClick={handleSlideToParent}>
+                <ArrowBackIosNewIcon classes={{ root: 'SvgIconChild' }} />
                 <Checkbox
+                  onClick={handlePreventLeave}
                   onChange={handleChildCheck(c)}
                   checked={!!find(checkedChild, (child) => child.id === c.id)}
                 />
