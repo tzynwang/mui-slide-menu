@@ -1,4 +1,5 @@
 import React, { memo, useState, useMemo, useRef } from 'react'
+import { find, uniqBy } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
@@ -44,12 +45,12 @@ function App(): React.ReactElement {
   // States
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [parent, setParent] = useState<null | number>(null)
+  const [checkedChild, setCheckedChild] = useState<Child[]>([])
   const dynamicChildList = useMemo(
     () => CHILD.filter((c) => c.parent === parent),
     [parent]
   )
   const containerRef = useRef<null | HTMLDivElement>(null)
-  const open = Boolean(anchorEl)
 
   // Functions
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -64,20 +65,42 @@ function App(): React.ReactElement {
   const handleSlideToParent = () => {
     setParent(null)
   }
-  const handleParentCheck = (
+  const handleParentClick = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.stopPropagation()
   }
+  const handleParentChange =
+    (p: Parent) =>
+    (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+      if (checked) {
+        const final = [
+          ...checkedChild,
+          ...CHILD.filter((c) => c.parent === p.id)
+        ]
+        setCheckedChild(uniqBy(final, 'id'))
+      } else {
+        setCheckedChild(checkedChild.filter((c) => c.parent !== p.id))
+      }
+    }
+  const handleChildCheck =
+    (c: Child) =>
+    (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+      if (checked) {
+        setCheckedChild((prev) => [...prev, c])
+      } else {
+        setCheckedChild((prev) => prev.filter((p) => p.id !== c.id))
+      }
+    }
 
   // Main
   return (
     <div>
       <Button
         id="basic-button"
-        aria-controls={open ? 'basic-menu' : undefined}
+        aria-controls={!!anchorEl ? 'basic-menu' : undefined}
         aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
+        aria-expanded={!!anchorEl ? 'true' : undefined}
         onClick={handleOpen}
       >
         Dashboard
@@ -85,7 +108,7 @@ function App(): React.ReactElement {
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}
-        open={open}
+        open={!!anchorEl}
         onClose={handleClose}
         MenuListProps={{
           'aria-labelledby': 'basic-button'
@@ -97,7 +120,19 @@ function App(): React.ReactElement {
           <Paper classes={{ root: 'PaperParent' }}>
             {PARENT.map((p) => (
               <MenuItem key={p.id} onClick={handleSliceToChild(p.id)}>
-                <Checkbox onClick={handleParentCheck} />
+                <Checkbox
+                  onClick={handleParentClick}
+                  onChange={handleParentChange(p)}
+                  indeterminate={
+                    !!checkedChild.filter((c) => c.parent === p.id).length &&
+                    checkedChild.filter((c) => c.parent === p.id).length !==
+                      CHILD.filter((c) => c.parent === p.id).length
+                  }
+                  checked={
+                    checkedChild.filter((c) => c.parent === p.id).length ===
+                    CHILD.filter((c) => c.parent === p.id).length
+                  }
+                />
                 {p.label}
                 <ArrowForwardIosIcon classes={{ root: 'SvgIconParent' }} />
               </MenuItem>
@@ -111,7 +146,10 @@ function App(): React.ReactElement {
             </MenuItem>
             {dynamicChildList.map((c) => (
               <MenuItem key={c.id}>
-                <Checkbox onClick={handleParentCheck} />
+                <Checkbox
+                  onChange={handleChildCheck(c)}
+                  checked={!!find(checkedChild, (child) => child.id === c.id)}
+                />
                 {c.label}
               </MenuItem>
             ))}
