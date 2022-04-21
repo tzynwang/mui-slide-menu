@@ -10,7 +10,7 @@ const theme = createTheme({
             height: '300px',
             position: 'relative',
             overflowY: 'hidden',
-            backgroundColor: '#947A6D'
+            backgroundColor: '#fffffe'
           },
           '&.PaperParent, &.PaperChild': {
             width: '300px',
@@ -22,10 +22,23 @@ const theme = createTheme({
             boxShadow: 'unset'
           },
           '&.PaperParent': {
-            backgroundColor: '#947A6D'
+            backgroundColor: '#fffffe'
           },
           '&.PaperChild': {
-            backgroundColor: '#947A6D'
+            backgroundColor: '#fffffe'
+          }
+        }
+      }
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          '&.SvgIconParent': {
+            marginLeft: 'auto',
+            fontSize: '1rem'
+          },
+          '&.SvgIconChild': {
+            fontSize: '1rem'
           }
         }
       }
