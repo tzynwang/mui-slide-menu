@@ -5,12 +5,21 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
+          "&.TwoColPaperMenu": {
+            width: "600px",
+            height: "300px",
+            position: "relative",
+            overflowY: "hidden",
+            backgroundColor: "#fffffe",
+            boxShadow: "unset",
+          },
           "&.PaperMenu": {
             width: "300px",
             height: "300px",
             position: "relative",
             overflowY: "hidden",
             backgroundColor: "#fffffe",
+            boxShadow: "unset",
           },
           "&.PaperParent, &.PaperChild": {
             width: "300px",
@@ -26,6 +35,25 @@ const theme = createTheme({
           },
           "&.PaperChild": {
             backgroundColor: "#fffffe",
+          },
+          "&.TwoColPaperChild": {
+            width: "300px",
+            height: "300px",
+            position: "absolute",
+            top: 0,
+            left: 300,
+            overflowY: "auto",
+            boxShadow: "unset",
+            backgroundColor: "#fffffe",
+          },
+        },
+      },
+    },
+    MuiList: {
+      styleOverrides: {
+        root: {
+          "&.ListMenuNoPadding": {
+            padding: "0px",
           },
         },
       },
@@ -46,6 +74,12 @@ const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
+          "&.MenuTitleClose": {
+            position: 'absolute',
+            top: '50%',
+            right: '16px',
+            transform: 'translateY(-50%)'
+          },
           "&.ButtonBaseParent": {
             marginLeft: "auto",
           },
@@ -57,6 +91,9 @@ const theme = createTheme({
         root: {
           "&.Height40": {
             height: "40px",
+          },
+          "&.TwoColMenuItemChild": {
+            padding: "6px 16px 6px 48px",
           },
           "&.MenuItemChild": {
             padding: "6px 16px 6px 80px",

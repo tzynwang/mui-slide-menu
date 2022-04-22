@@ -1,5 +1,8 @@
 import React, { memo, useState, useMemo, useRef } from "react";
 import { find, uniqBy } from "lodash";
+import { Theme } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
@@ -9,6 +12,7 @@ import Paper from "@mui/material/Paper";
 import Slide from "@mui/material/Slide";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import CloseIcon from "@mui/icons-material/Close";
 import type { SlideMenuProps, Child } from "./types";
 
 function SlideMenu(props: SlideMenuProps): React.ReactElement {
@@ -22,6 +26,9 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
     [parent, childArr]
   );
   const containerRef = useRef<null | HTMLDivElement>(null);
+  const underBreakPointsSm = useMediaQuery<Theme>((theme) =>
+    theme.breakpoints.down("sm")
+  );
 
   // Functions
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -32,6 +39,7 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
   };
   const handleSliceToChild = (parent: number) => () => {
     setParent(parent);
+    setCheckedChild([]);
   };
   const handleSlideToParent = () => {
     setParent(null);
@@ -83,60 +91,137 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
         MenuListProps={{
           "aria-labelledby": "basic-button",
         }}
-        ref={containerRef}
-        classes={{ paper: "PaperMenu" }}
+        classes={{ list: "ListMenuNoPadding" }}
       >
-        <Slide direction="right" in={!parent} container={containerRef.current}>
-          <Paper classes={{ root: "PaperParent" }}>
-            {parentArr.map((p) => (
-              <MenuItem key={p.id} classes={{ root: "Height40" }}>
-                {p.label}
-                <IconButton
-                  classes={{ root: "ButtonBaseParent" }}
-                  onClick={handleSliceToChild(p.id)}
-                >
-                  <ArrowForwardIosIcon classes={{ root: "SvgIconParent" }} />
-                </IconButton>
-              </MenuItem>
-            ))}
-          </Paper>
-        </Slide>
-        <Slide direction="right" in={!!parent} container={containerRef.current}>
-          <Paper classes={{ root: "PaperChild" }}>
-            <MenuItem classes={{ root: "Height40" }}>
-              <IconButton
-                classes={{ root: "MenuIconButton" }}
-                onClick={handleSlideToParent}
-              >
-                <ArrowBackIosNewIcon classes={{ root: "SvgIconChild" }} />
-              </IconButton>
-              <Checkbox
-                onChange={handleParentChange(parent)}
-                checked={
-                  checkedChild.filter((c) => c.parent === parent).length ===
-                  childArr.filter((c) => c.parent === parent).length
-                }
-                indeterminate={
-                  !!checkedChild.filter((c) => c.parent === parent).length &&
-                  checkedChild.filter((c) => c.parent === parent).length !==
-                    childArr.filter((c) => c.parent === parent).length
-                }
-                classes={{ root: "CheckboxChild" }}
-              />
-              {parentArr.find((p) => p.id === parent)?.label}
-            </MenuItem>
-            {dynamicChildList.map((c) => (
-              <MenuItem key={c.id} classes={{ root: "Height40 MenuItemChild" }}>
-                <Checkbox
-                  onChange={handleChildCheck(c)}
-                  checked={!!find(checkedChild, (child) => child.id === c.id)}
-                  classes={{ root: "CheckboxChild" }}
-                />
-                {c.label}
-              </MenuItem>
-            ))}
-          </Paper>
-        </Slide>
+        <Box
+          sx={{
+            position: "relative",
+            height: underBreakPointsSm ? "40px" : "44px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderBottom: "1px solid #DFDFDF",
+          }}
+        >
+          您工作所屬的產業
+          <IconButton
+            classes={{ root: "MenuTitleClose" }}
+            onClick={handleClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Paper
+          ref={containerRef}
+          classes={{
+            root: underBreakPointsSm ? "PaperMenu" : "TwoColPaperMenu",
+          }}
+        >
+          <Slide
+            direction="right"
+            in={underBreakPointsSm ? !parent : true}
+            container={containerRef.current}
+          >
+            <Paper classes={{ root: "PaperParent" }}>
+              {parentArr.map((p) => (
+                <MenuItem key={p.id} classes={{ root: "Height40" }} onClick={handleSliceToChild(p.id)}>
+                  {p.label}
+                  <IconButton
+                    classes={{ root: "ButtonBaseParent" }}
+                    onClick={handleSliceToChild(p.id)}
+                    disableFocusRipple
+                    disableRipple
+                  >
+                    <ArrowForwardIosIcon classes={{ root: "SvgIconParent" }} />
+                  </IconButton>
+                </MenuItem>
+              ))}
+            </Paper>
+          </Slide>
+          <Slide
+            direction="right"
+            in={underBreakPointsSm ? !!parent : true}
+            container={containerRef.current}
+          >
+            <Paper
+              classes={{
+                root: underBreakPointsSm ? "PaperChild" : "TwoColPaperChild",
+              }}
+            >
+              {parent && (
+                <MenuItem classes={{ root: "Height40" }}>
+                  <IconButton
+                    classes={{ root: "MenuIconButton" }}
+                    onClick={handleSlideToParent}
+                    sx={{ display: underBreakPointsSm ? "block" : "none" }}
+                    disableFocusRipple
+                    disableRipple
+                  >
+                    <ArrowBackIosNewIcon classes={{ root: "SvgIconChild" }} />
+                  </IconButton>
+                  <Checkbox
+                    onChange={handleParentChange(parent)}
+                    checked={
+                      checkedChild.filter((c) => c.parent === parent).length ===
+                      childArr.filter((c) => c.parent === parent).length
+                    }
+                    indeterminate={
+                      !!checkedChild.filter((c) => c.parent === parent)
+                        .length &&
+                      checkedChild.filter((c) => c.parent === parent).length !==
+                        childArr.filter((c) => c.parent === parent).length
+                    }
+                    classes={{ root: "CheckboxChild" }}
+                    disableRipple
+                  />
+                  {parentArr.find((p) => p.id === parent)?.label}
+                </MenuItem>
+              )}
+              {parent &&
+                dynamicChildList.map((c) => (
+                  <MenuItem
+                    key={c.id}
+                    classes={{
+                      root: `Height40 ${
+                        underBreakPointsSm
+                          ? "MenuItemChild"
+                          : "TwoColMenuItemChild"
+                      }`,
+                    }}
+                  >
+                    <Checkbox
+                      onChange={handleChildCheck(c)}
+                      checked={
+                        !!find(checkedChild, (child) => child.id === c.id)
+                      }
+                      classes={{ root: "CheckboxChild" }}
+                      disableRipple
+                    />
+                    {c.label}
+                  </MenuItem>
+                ))}
+            </Paper>
+          </Slide>
+        </Paper>
+        <Box
+          sx={{
+            height: "56px",
+            display: "flex",
+            justifyContent: underBreakPointsSm ? "center" : "flex-end",
+            alignItems: "center",
+            paddingRight: underBreakPointsSm ? "0px" : "16px",
+            borderTop: "1px solid #dfdfdf",
+          }}
+        >
+          <Button
+            onClick={handleClose}
+            sx={{ height: "40px", width: "120px" }}
+            variant="contained"
+            disableElevation
+          >
+            確定
+          </Button>
+        </Box>
       </Menu>
     </React.Fragment>
   );
