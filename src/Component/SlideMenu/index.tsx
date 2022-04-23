@@ -12,6 +12,8 @@ import Paper from "@mui/material/Paper";
 import Slide from "@mui/material/Slide";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import CloseIcon from "@mui/icons-material/Close";
 import type { SlideMenuProps, Child } from "./types";
 
@@ -24,6 +26,13 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
   const dynamicChildList = useMemo(
     () => childArr.filter((c) => c.parent === parent),
     [parent, childArr]
+  );
+  const buttonLabel = useMemo(
+    () =>
+      checkedChild.length
+        ? checkedChild.map((c) => c.label).join("、")
+        : "請選擇項目",
+    [checkedChild]
   );
   const containerRef = useRef<null | HTMLDivElement>(null);
   const underBreakPointsSm = useMediaQuery<Theme>((theme) =>
@@ -44,11 +53,6 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
   const handleSlideToParent = () => {
     setParent(null);
   };
-  // const handlePreventLeave = (
-  //   e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  // ) => {
-  //   e.stopPropagation();
-  // };
   const handleParentChange =
     (p: null | number) =>
     (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
@@ -62,7 +66,7 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
         setCheckedChild(checkedChild.filter((c) => c.parent !== p));
       }
     };
-  const handleChildCheck =
+  const handleChildChange =
     (c: Child) =>
     (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
       if (checked) {
@@ -79,9 +83,10 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
         aria-controls={!!anchorEl ? "basic-menu" : undefined}
         aria-haspopup="true"
         aria-expanded={!!anchorEl ? "true" : undefined}
+        endIcon={!!anchorEl ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
         onClick={handleOpen}
       >
-        Dashboard
+        {buttonLabel}
       </Button>
       <Menu
         id="basic-menu"
@@ -124,7 +129,11 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
           >
             <Paper classes={{ root: "PaperParent" }}>
               {parentArr.map((p) => (
-                <MenuItem key={p.id} classes={{ root: "Height40" }} onClick={handleSliceToChild(p.id)}>
+                <MenuItem
+                  key={p.id}
+                  classes={{ root: "Height40" }}
+                  onClick={handleSliceToChild(p.id)}
+                >
                   {p.label}
                   <IconButton
                     classes={{ root: "ButtonBaseParent" }}
@@ -190,7 +199,7 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
                     }}
                   >
                     <Checkbox
-                      onChange={handleChildCheck(c)}
+                      onChange={handleChildChange(c)}
                       checked={
                         !!find(checkedChild, (child) => child.id === c.id)
                       }
@@ -217,7 +226,6 @@ function SlideMenu(props: SlideMenuProps): React.ReactElement {
             onClick={handleClose}
             sx={{ height: "40px", width: "120px" }}
             variant="contained"
-            disableElevation
           >
             確定
           </Button>
